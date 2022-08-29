@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 
 '''
-costStruct = [  {'date': '7.1', 'item': ['两餐'], 'consume': [33]},
-                {'date': '7.2', 'item': ['两餐', '遮阳布', '出行'], 'consume': [25, 6, 13]},
+costStruct = [  {'date': '7.1', 'item': ['两餐'], 'consume': [33], 'flag': [0]},
+                {'date': '7.2', 'item': ['两餐', '遮阳布', '!出行'], 'consume': [25, 6, 13], 'flag': [0, 0, 1]},
                 ...
              ]
 '''
@@ -21,12 +21,17 @@ for i in range(len(costStrList)):
 # print(costStrList)
 
 for i in range(len(costStrList)):
-    costDic = {'date': '', 'item': [], 'consume': []}
+    costDic = {'date': '', 'item': [], 'consume': [], 'flag': []}
     strList = costStrList[i].split(' ')
     costDic['date'] = strList[0]
     for j in range(1, len(strList)):
         cost = strList[j].split('-')
-        costDic['item'].append(cost[0])
+        if cost[0][0] == '!':
+            costDic['flag'].append(1)
+            costDic['item'].append(cost[0][1:])
+        else:
+            costDic['flag'].append(0)
+            costDic['item'].append(cost[0])
         costDic['consume'].append(int(cost[1]))
     costStruct.append(costDic)
 # print(costStruct)
@@ -34,12 +39,19 @@ for i in range(len(costStrList)):
 # 计算总共花费
 dayCost = []
 dateStr = []
+sumConsumeFlag1 = 0     # 不统计在内
 for i in range(len(costStruct)):
-    dayCost.append(sum(costStruct[i]['consume']))
+    sumConsumeFlag0 = 0
+    for j in range(len(costStruct[i]['consume'])):
+        if costStruct[i]['flag'][j] == 0:
+            sumConsumeFlag0 = sumConsumeFlag0 + costStruct[i]['consume'][j]
+        elif costStruct[i]['flag'][j] == 1:
+            sumConsumeFlag1 = sumConsumeFlag1 + costStruct[i]['consume'][j]
+    dayCost.append(sumConsumeFlag0)
     dateStr.append(costStruct[i]['date'])
     print(costStruct[i]['date'] + ' cost ￥' + str(dayCost[i]))
-print('total cost ￥' + str(sum(dayCost)))
-
+print('total cost ￥' + str(sum(dayCost)), end=', ')
+print('and ￥' + str(sumConsumeFlag1) + ' are not counted')
 # 绘图
 plt.figure(figsize=(3+0.25*len(dayCost), 8), dpi=100)    # 自适应长度
 plt.bar(dateStr, dayCost)
